@@ -21,8 +21,6 @@ module.exports = class LoginRouter {
     this.authUseCase.auth(email, password)
 
     // forces an error to allow test to execute smoothly
-    return {
-      statusCode: 401
-    }
+    return HttpResponse.unauthorizedError()
   }
 }
