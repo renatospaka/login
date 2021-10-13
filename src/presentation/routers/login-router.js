@@ -6,7 +6,7 @@ module.exports = class LoginRouter {
   }
 
   route (httpRequest) {
-    if (!httpRequest) {
+    if (!httpRequest || !httpRequest.body || !this.authUseCase || !this.authUseCase.auth) {
       return HttpResponse.serverError()
     }
 
@@ -18,9 +18,11 @@ module.exports = class LoginRouter {
       return HttpResponse.badRequest('password')
     }
 
-    this.authUseCase.auth(email, password)
+    const token = this.authUseCase.auth(email, password)
+    if (!token) {
+      return HttpResponse.unauthorizedError()
+    }
 
-    // forces an error to allow test to execute smoothly
-    return HttpResponse.unauthorizedError()
+    return HttpResponse.ok({ token })
   }
 }
