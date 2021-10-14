@@ -1,16 +1,31 @@
 const LoginRouter = require('./login-router')
+const InvalidParamError = require('../helpers/invalid-param-error')
 const MissingParamError = require('../helpers/missing-param-error')
 const UnauthorizedError = require('../helpers/unauthorized-error')
 const ServerError = require('../helpers/server-error')
 
 const makeSUT = () => {
   const authUseCaseSpy = makeAuthUseCase()
+  const emailValidatorSpy = makeEmailValidator()
   authUseCaseSpy.token = 'valid-token'
-  const sut = new LoginRouter(authUseCaseSpy)
+  const sut = new LoginRouter(authUseCaseSpy, emailValidatorSpy)
   return {
     sut,
-    authUseCaseSpy
+    authUseCaseSpy,
+    emailValidatorSpy
   }
+}
+
+const makeEmailValidator = () => {
+  class EmailValidatorSpy {
+    isValid (email) {
+      return this.isEmailValid
+    }
+  }
+
+  const emailValidatorSpy = new EmailValidatorSpy()
+  emailValidatorSpy.isValid = true
+  return emailValidatorSpy
 }
 
 const makeAuthUseCase = () => {
@@ -59,18 +74,19 @@ describe('Login Router', () => {
     expect(httpResponse.body).toEqual(new MissingParamError('password'))
   })
 
-  // test('Should return 400 when an invalid password is provided', async () => {
-  //   const { sut } = makeSUT()
-  //   const httpRequest = {
-  //     body: {
-  //       email: 'invalid@email.com',
-  //       password: 'any'
-  //     }
-  //   }
-  //   const httpResponse = await sut.route(httpRequest)
-  //   expect(httpResponse.statusCode).toBe(400)
-  //   expect(httpResponse.body).toEqual(new InvalidParamError('email'))
-  // })
+  test('Should return 400 when an invalid password is provided', async () => {
+    const { sut, emailValidatorSpy } = makeSUT()
+    emailValidatorSpy.isEmailValid = false
+    const httpRequest = {
+      body: {
+        email: 'invalid@email.com',
+        password: 'any'
+      }
+    }
+    const httpResponse = await sut.route(httpRequest)
+    expect(httpResponse.statusCode).toBe(400)
+    expect(httpResponse.body).toEqual(new InvalidParamError('email'))
+  })
 
   test('Should return 500 if no httpRequest is provided', async () => {
     const { sut } = makeSUT()
