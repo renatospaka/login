@@ -34,7 +34,7 @@ const makeAuthUseCaseWithError = () => {
 }
 
 describe('Login Router', () => {
-  test('Should return 400 when no email provided', async () => {
+  test('Should return 400 when no email is provided', async () => {
     // sut = subject under test
     const { sut } = makeSUT()
     const httpRequest = {
@@ -47,7 +47,7 @@ describe('Login Router', () => {
     expect(httpResponse.body).toEqual(new MissingParamError('email'))
   })
 
-  test('Should return 400 when no password provided', async () => {
+  test('Should return 400 when no password is provided', async () => {
     const { sut } = makeSUT()
     const httpRequest = {
       body: {
@@ -58,6 +58,19 @@ describe('Login Router', () => {
     expect(httpResponse.statusCode).toBe(400)
     expect(httpResponse.body).toEqual(new MissingParamError('password'))
   })
+
+  // test('Should return 400 when an invalid password is provided', async () => {
+  //   const { sut } = makeSUT()
+  //   const httpRequest = {
+  //     body: {
+  //       email: 'invalid@email.com',
+  //       password: 'any'
+  //     }
+  //   }
+  //   const httpResponse = await sut.route(httpRequest)
+  //   expect(httpResponse.statusCode).toBe(400)
+  //   expect(httpResponse.body).toEqual(new InvalidParamError('email'))
+  // })
 
   test('Should return 500 if no httpRequest is provided', async () => {
     const { sut } = makeSUT()
