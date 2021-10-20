@@ -41,6 +41,15 @@ const makeLoadUserByEmailRepository = () => {
   return loadUserByEmailRepositorySpy
 }
 
+const makeLoadUserByEmailRepositoryWithError = () => {
+  class LoadUserByEmailRepositorySpy {
+    async load () {
+      throw new Error()
+    }
+  }
+  return new LoadUserByEmailRepositorySpy()
+}
+
 const makeSUT = () => {
   const encrypterSpy = makeEncrypter()
   const loadUserByEmailRepositorySpy = makeLoadUserByEmailRepository()
@@ -137,6 +146,18 @@ describe('Auth Usecase', () => {
         loadUserByEmailRepository,
         encrypter,
         tokenyzer: invalid
+      })
+    )
+    for (const sut of suts) {
+      const promiseToken = sut.auth('any-email@email.com', 'any-password')
+      expect(promiseToken).rejects.toThrow()
+    }
+  })
+
+  test('Should throw exception if dependency throws', async () => {
+    const suts = [].concat(
+      new AuthUseCase({
+        loadUserByEmailRepository: makeLoadUserByEmailRepositoryWithError()
       })
     )
     for (const sut of suts) {
