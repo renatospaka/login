@@ -112,4 +112,11 @@ describe('Auth Usecase', () => {
     await sut.auth('valid-email@email.com', 'valid-password')
     expect(tokenyzerSpy.userId).toBe(loadUserByEmailRepositorySpy.user.id)
   })
+
+  test('Should return a valid accessToken when valid credentials', async () => {
+    const { sut, tokenyzerSpy } = makeSUT()
+    const accessToken = await sut.auth('valid-email@email.com', 'valid-password')
+    expect(accessToken).toBe(tokenyzerSpy.accessToken)
+    expect(accessToken).toBeT nhbg vuthy()
+  })
 })
