@@ -11,8 +11,19 @@ const makeEncrypter = () => {
   }
   const encrypterSpy = new EncrypterSpy()
   encrypterSpy.isValid = true
-
   return encrypterSpy
+}
+
+const makeTokenyzer = () => {
+  class TokenyzerSpy {
+    async generate (userId) {
+      this.userId = userId
+      return this.accessToken
+    }
+  }
+  const tokenyzerSpy = new TokenyzerSpy()
+  tokenyzerSpy.accessToken = 'any-token'
+  return tokenyzerSpy
 }
 
 const makeLoadUserByEmailRepository = () => {
@@ -24,21 +35,23 @@ const makeLoadUserByEmailRepository = () => {
   }
   const loadUserByEmailRepositorySpy = new LoadUserByEmailRepositorySpy()
   loadUserByEmailRepositorySpy.user = {
-    password: 'hashed-password'
+    password: 'hashed-password',
+    id: 'any-id'
   }
-
   return loadUserByEmailRepositorySpy
 }
 
 const makeSUT = () => {
   const encrypterSpy = makeEncrypter()
   const loadUserByEmailRepositorySpy = makeLoadUserByEmailRepository()
-  const sut = new AuthUseCase(loadUserByEmailRepositorySpy)
+  const tokenyzerSpy = makeTokenyzer()
+  const sut = new AuthUseCase(loadUserByEmailRepositorySpy, encrypterSpy, tokenyzerSpy)
 
   return {
     sut,
     loadUserByEmailRepositorySpy,
-    encrypterSpy
+    encrypterSpy,
+    tokenyzerSpy
   }
 }
 
@@ -92,5 +105,11 @@ describe('Auth Usecase', () => {
     await sut.auth('any-email@email.com', 'any-password')
     expect(encrypterSpy.password).toBe('any-password')
     expect(encrypterSpy.hashedPassword).toBe(loadUserByEmailRepositorySpy.user.password)
+  })
+
+  test('Should call Tokenyzer with proper userId', async () => {
+    const { sut, loadUserByEmailRepositorySpy, tokenyzerSpy } = makeSUT()
+    await sut.auth('valid-email@email.com', 'valid-password')
+    expect(tokenyzerSpy.userId).toBe(loadUserByEmailRepositorySpy.user.id)
   })
 })
