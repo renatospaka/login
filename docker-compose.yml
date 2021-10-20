@@ -5,15 +5,15 @@ services:
     build: .
     # entrypoint: dockerize -wait tcp://db:5432 -timeout 40s ./.docker/entrypoint.sh
     entrypoint: ./.docker/entrypoint.sh
-    container_name: api-node
+    container_name: login-api
     ports:
-      - 4000:3000
+      - 4000:5050
     volumes:
       - .:/home/node/app
     # depends_on:
     #   - db
     networks:
-      - app-network
+      - login-network
     extra_hosts:
       - "host.docker.internal:172.17.0.1"
 
@@ -30,7 +30,7 @@ services:
   #     - MONGO_INITDB_ROOT_PASSWORD=root
   #     - MONGO_INITDB_DATABASE=login
   #   networks:
-  #     - app-network
+  #     - login-network
   
   # mongo-express:
   #   image: mongo-express
@@ -46,10 +46,10 @@ services:
   #   depends_on:
   #     - db
   #   networks:
-  #     - app-network
+  #     - login-network
   #   extra_hosts:
   #     - "host.docker.internal:172.17.0.1"
 
 networks:
-  app-network:
+  login-network:
     driver: bridge

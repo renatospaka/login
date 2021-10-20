@@ -7,7 +7,8 @@
     "test:unit": "npm test -- --watch -c jest-unit-config.js",
     "test:integration": "npm test -- --watch -c jest-integration-config.js",
     "test:staged": "npm test -- --findRelatedTests",
-    "test:ci": "npm test -- --coverage"
+    "test:ci": "npm test -- --coverage",
+    "dev": "nodemon src/index.js"
   },
   "standard": {
     "env": [
@@ -18,9 +19,21 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "jest": "^27.2.5",
-    "nodemon": "^2.0.13",
+    "jest": "^27.3.1",
+    "nodemon": "^2.0.14",
     "standard": "^16.0.4"
   },
+  "dependencies": {
+    "express": "^4.17.1",
+    "mongoose": "^6.0.11"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/renatospaka/login.git"
+  },
+  "bugs": {
+    "url": "https://github.com/renatospaka/login/issues"
+  },
+  "homepage": "https://github.com/renatospaka/login#readme",
   "description": ""
 }
