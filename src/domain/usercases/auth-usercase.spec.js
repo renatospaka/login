@@ -72,19 +72,25 @@ describe('Auth Usecase', () => {
     expect(promiseToken).rejects.toThrow(new MissingParamError('password'))
   })
 
-  test('Should call LoadUserByEmail with proper params', async () => {
+  test('Should call LoadUserByEmailRepository with proper params', async () => {
     const { sut, loadUserByEmailRepositorySpy } = makeSUT()
     await sut.auth('any-email@email.com', 'any-password')
     expect(loadUserByEmailRepositorySpy.email).toBe('any-email@email.com')
   })
 
-  test('Should throw exception if no LoadUserByEmail is provided', async () => {
+  test('Should throw exception if no LoadUserByEmailRepository is provided', async () => {
     const sut = new AuthUseCase({})
     const promiseToken = sut.auth('any-email@email.com', 'any-password')
     expect(promiseToken).rejects.toThrow()
   })
 
-  test('Should throw exception if LoadUserByEmail has no load method', async () => {
+  test('Should throw exception if no dependency is provided', async () => {
+    const sut = new AuthUseCase()
+    const promiseToken = sut.auth('any-email@email.com', 'any-password')
+    expect(promiseToken).rejects.toThrow()
+  })
+
+  test('Should throw exception if LoadUserByEmailRepository has no load method', async () => {
     const sut = new AuthUseCase({ loadUserByEmailRepository: {} })
     const promiseToken = sut.auth('any-email@email.com', 'any-password')
     expect(promiseToken).rejects.toThrow()
