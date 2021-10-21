@@ -14,6 +14,15 @@ const makeEncrypter = () => {
   return encrypterSpy
 }
 
+const makeEncrypterWithError = () => {
+  class EncrypterSpy {
+    async compare () {
+      throw new Error()
+    }
+  }
+  return new EncrypterSpy()
+}
+
 const makeTokenyzer = () => {
   class TokenyzerSpy {
     async generate (userId) {
@@ -24,6 +33,15 @@ const makeTokenyzer = () => {
   const tokenyzerSpy = new TokenyzerSpy()
   tokenyzerSpy.accessToken = 'any-token'
   return tokenyzerSpy
+}
+
+const makeTokenyzerWithError = () => {
+  class TokenyzerSpy {
+    async generate () {
+      throw new Error()
+    }
+  }
+  return new TokenyzerSpy()
 }
 
 const makeLoadUserByEmailRepository = () => {
@@ -154,10 +172,21 @@ describe('Auth Usecase', () => {
     }
   })
 
-  test('Should throw exception if dependency throws', async () => {
+  test('Should throw exception if any dependency throws', async () => {
+    const loadUserByEmailRepository = makeLoadUserByEmailRepository()
+    const encrypter = makeEncrypter()
     const suts = [].concat(
       new AuthUseCase({
         loadUserByEmailRepository: makeLoadUserByEmailRepositoryWithError()
+      }),
+      new AuthUseCase({
+        loadUserByEmailRepository,
+        encrypter: makeEncrypterWithError()
+      }),
+      new AuthUseCase({
+        loadUserByEmailRepository,
+        encrypter,
+        tokenyzer: makeTokenyzerWithError()
       })
     )
     for (const sut of suts) {
