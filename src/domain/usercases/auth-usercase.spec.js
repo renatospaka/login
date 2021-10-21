@@ -68,21 +68,43 @@ const makeLoadUserByEmailRepositoryWithError = () => {
   return new LoadUserByEmailRepositorySpy()
 }
 
+const makeUpdateAccessTokenRepository = () => {
+  class UpdateAccessTokenRepositorySpy {
+    async update (userId, accessToken) {
+      this.userId = userId
+      this.accessToken = accessToken
+    }
+  }
+  return new UpdateAccessTokenRepositorySpy()
+}
+
+const makeUpdateAccessTokenRepositoryWithError = () => {
+  class UpdateAccessTokenRepositorySpy {
+    async update () {
+      throw new Error()
+    }
+  }
+  return new UpdateAccessTokenRepositorySpy()
+}
+
 const makeSUT = () => {
   const encrypterSpy = makeEncrypter()
   const loadUserByEmailRepositorySpy = makeLoadUserByEmailRepository()
   const tokenyzerSpy = makeTokenyzer()
+  const updateAccessTokenRepositorySpy = makeUpdateAccessTokenRepository()
   const sut = new AuthUseCase({
     loadUserByEmailRepository: loadUserByEmailRepositorySpy,
     encrypter: encrypterSpy,
-    tokenyzer: tokenyzerSpy
+    tokenyzer: tokenyzerSpy,
+    updateAccessTokenRepository: updateAccessTokenRepositorySpy
   })
 
   return {
     sut,
     loadUserByEmailRepositorySpy,
     encrypterSpy,
-    tokenyzerSpy
+    tokenyzerSpy,
+    updateAccessTokenRepositorySpy
   }
 }
 
@@ -132,6 +154,13 @@ describe('Auth Usecase', () => {
     expect(tokenyzerSpy.userId).toBe(loadUserByEmailRepositorySpy.user.id)
   })
 
+  test('Should call UpdateAccessTokenRepository with proper params', async () => {
+    const { sut, loadUserByEmailRepositorySpy, tokenyzerSpy, updateAccessTokenRepositorySpy } = makeSUT()
+    await sut.auth('valid-email@email.com', 'valid-password')
+    expect(updateAccessTokenRepositorySpy.userId).toBe(loadUserByEmailRepositorySpy.user.id)
+    expect(updateAccessTokenRepositorySpy.accessToken).toBe(tokenyzerSpy.accessToken)
+  })
+
   test('Should return a valid accessToken when valid credentials', async () => {
     const { sut, tokenyzerSpy } = makeSUT()
     const accessToken = await sut.auth('valid-email@email.com', 'valid-password')
@@ -143,6 +172,7 @@ describe('Auth Usecase', () => {
     const invalid = {}
     const loadUserByEmailRepository = makeLoadUserByEmailRepository()
     const encrypter = makeEncrypter()
+    const tokenyzer = makeTokenyzer()
     const suts = [].concat(
       new AuthUseCase(),
       new AuthUseCase({}),
@@ -164,6 +194,17 @@ describe('Auth Usecase', () => {
         loadUserByEmailRepository,
         encrypter,
         tokenyzer: invalid
+      }),
+      new AuthUseCase({
+        loadUserByEmailRepository,
+        encrypter,
+        tokenyzer
+      }),
+      new AuthUseCase({
+        loadUserByEmailRepository,
+        encrypter,
+        tokenyzer,
+        updateAccessTokenRepository: invalid
       })
     )
     for (const sut of suts) {
@@ -175,6 +216,7 @@ describe('Auth Usecase', () => {
   test('Should throw exception if any dependency throws', async () => {
     const loadUserByEmailRepository = makeLoadUserByEmailRepository()
     const encrypter = makeEncrypter()
+    const tokenyzer = makeTokenyzer()
     const suts = [].concat(
       new AuthUseCase({
         loadUserByEmailRepository: makeLoadUserByEmailRepositoryWithError()
@@ -187,6 +229,12 @@ describe('Auth Usecase', () => {
         loadUserByEmailRepository,
         encrypter,
         tokenyzer: makeTokenyzerWithError()
+      }),
+      new AuthUseCase({
+        loadUserByEmailRepository,
+        encrypter,
+        tokenyzer,
+        updateAccessTokenRepository: makeUpdateAccessTokenRepositoryWithError()
       })
     )
     for (const sut of suts) {
